@@ -14,7 +14,178 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "hiking_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hiking_events: {
+        Row: {
+          created_at: string
+          description: string | null
+          difficulty_level: string | null
+          end_date: string | null
+          equipment_needed: string[] | null
+          group_id: string
+          id: string
+          is_premium: boolean | null
+          location: string
+          max_participants: number | null
+          meeting_point: string | null
+          organizer_id: string
+          start_date: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          difficulty_level?: string | null
+          end_date?: string | null
+          equipment_needed?: string[] | null
+          group_id: string
+          id?: string
+          is_premium?: boolean | null
+          location: string
+          max_participants?: number | null
+          meeting_point?: string | null
+          organizer_id: string
+          start_date: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          difficulty_level?: string | null
+          end_date?: string | null
+          equipment_needed?: string[] | null
+          group_id?: string
+          id?: string
+          is_premium?: boolean | null
+          location?: string
+          max_participants?: number | null
+          meeting_point?: string | null
+          organizer_id?: string
+          start_date?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hiking_events_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "hiking_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hiking_groups: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          difficulty_level: string | null
+          id: string
+          is_private: boolean | null
+          location: string | null
+          max_members: number | null
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty_level?: string | null
+          id?: string
+          is_private?: boolean | null
+          location?: string | null
+          max_members?: number | null
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty_level?: string | null
+          id?: string
+          is_private?: boolean | null
+          location?: string | null
+          max_members?: number | null
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          full_name: string | null
+          hiking_experience: string | null
+          id: string
+          location: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string | null
+          hiking_experience?: string | null
+          id?: string
+          location?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string | null
+          hiking_experience?: string | null
+          id?: string
+          location?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
