@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Groups from "./pages/Groups";
 import Events from "./pages/Events";
 import CreateGroup from "./pages/CreateGroup";
+import GroupDetail from "./pages/GroupDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/groups" element={<Groups />} />
             <Route path="/groups/create" element={<CreateGroup />} />
+            <Route path="/groups/:id" element={<GroupDetail />} />
             <Route path="/events" element={<Events />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
