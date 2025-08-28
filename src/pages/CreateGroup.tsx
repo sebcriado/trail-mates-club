@@ -169,9 +169,10 @@ const CreateGroup = () => {
                       <SelectValue placeholder="Sélectionner un niveau" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="facile">Facile</SelectItem>
-                      <SelectItem value="modéré">Modéré</SelectItem>
-                      <SelectItem value="difficile">Difficile</SelectItem>
+                      <SelectItem value="easy">Facile</SelectItem>
+                      <SelectItem value="moderate">Modéré</SelectItem>
+                      <SelectItem value="hard">Difficile</SelectItem>
+                      <SelectItem value="expert">Expert</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
