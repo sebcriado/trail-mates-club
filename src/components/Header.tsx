@@ -17,12 +17,12 @@ export const Header = () => {
 
         {/* Navigation - Desktop */}
         <nav className="hidden md:flex items-center gap-6">
-          <a href="#groups" className="text-sm font-medium text-muted-foreground hover:text-primary transition-smooth">
+          <Link to="/groups" className="text-sm font-medium text-muted-foreground hover:text-primary transition-smooth">
             Groupes
-          </a>
-          <a href="#events" className="text-sm font-medium text-muted-foreground hover:text-primary transition-smooth">
+          </Link>
+          <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-primary transition-smooth">
             Événements
-          </a>
+          </Link>
           <a href="#premium" className="text-sm font-medium text-muted-foreground hover:text-primary transition-smooth">
             Premium
           </a>
