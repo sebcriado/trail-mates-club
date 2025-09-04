@@ -10,7 +10,7 @@ export const Footer = () => {
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <Mountain className="h-8 w-8 text-accent" />
-              <span className="text-xl font-bold">HikeConnect</span>
+              <span className="text-xl font-bold">HikingHub</span>
             </div>
             <p className="text-primary-foreground/80 mb-6 max-w-md">
               La plateforme communautaire qui connecte les passionnés de randonnée 

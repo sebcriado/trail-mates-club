@@ -12,7 +12,7 @@ export const Header = () => {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
           <Mountain className="h-8 w-8 text-primary" />
-          <span className="text-xl font-bold text-foreground">HikeConnect</span>
+          <span className="text-xl font-bold text-foreground">HikingHub</span>
         </Link>
 
         {/* Navigation - Desktop */}

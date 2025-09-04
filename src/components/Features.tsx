@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Calendar, Crown, Shield, MapPin, Trophy } from "lucide-react";
+import { Users, Calendar, Crown, Shield, Trophy, Calendar1Icon } from "lucide-react";
 import groupIcon from "@/assets/group-icon.png";
 import eventIcon from "@/assets/event-icon.png";
+import { Link } from "react-router-dom";
 
 export const Features = () => {
   return (
@@ -33,10 +34,12 @@ export const Features = () => {
                 Formez des groupes avec des randonneurs qui partagent vos passions. 
                 Définissez le niveau, la région et l'ambiance de vos sorties.
               </p>
-              <Button variant="forest" className="w-full mt-auto">
-                <Users className="mr-2 h-4 w-4" />
-                Créer un groupe
-              </Button>
+              <Link to="/groups/create">
+                <Button variant="forest" className="w-full mt-auto">
+                  <Users className="mr-2 h-4 w-4" />
+                  Créer un groupe
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
@@ -52,10 +55,12 @@ export const Features = () => {
                 Planifiez vos randonnées, partagez les détails et gérez les inscriptions. 
                 Tout est simplifié pour vous concentrer sur l'aventure.
               </p>
-              <Button variant="trail" className="w-full mt-auto">
-                <Calendar className="mr-2 h-4 w-4" />
-                Créer un événement
-              </Button>
+              <Link to="/events/create">
+                <Button variant="trail" className="w-full mt-auto">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Créer un événement
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
@@ -68,7 +73,7 @@ export const Features = () => {
               <span className="text-accent font-semibold">PREMIUM</span>
             </div>
             <h3 className="text-2xl md:text-3xl font-bold mb-4">
-              Débloquez tout le potentiel de HikeConnect
+              Débloquez tout le potentiel de HikingHub
             </h3>
             <p className="text-lg text-white/90 mb-8">
               Accédez à des fonctionnalités avancées pour une expérience de randonnée incomparable.
@@ -76,9 +81,9 @@ export const Features = () => {
 
             <div className="grid md:grid-cols-3 gap-6 mb-8">
               <div className="flex flex-col items-center">
-                <MapPin className="h-8 w-8 text-accent mb-3" />
-                <h4 className="font-semibold mb-2">Cartes hors-ligne</h4>
-                <p className="text-sm text-white/80">Téléchargez les cartes pour randonner sans connexion</p>
+                <Calendar1Icon className="h-8 w-8 text-accent mb-3" />
+                <h4 className="font-semibold mb-2">Évènements premium</h4>
+                <p className="text-sm text-white/80">Accès à des événements exclusifs et à des randonnées guidées</p>
               </div>
               <div className="flex flex-col items-center">
                 <Shield className="h-8 w-8 text-accent mb-3" />
