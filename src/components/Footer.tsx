@@ -1,4 +1,5 @@
 import { Mountain, Mail, MapPin, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const Footer = () => {
   return (
@@ -31,10 +32,10 @@ export const Footer = () => {
           <div>
             <h3 className="font-semibold mb-4">Navigation</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="text-primary-foreground/80 hover:text-accent transition-smooth">Groupes</a></li>
-              <li><a href="#" className="text-primary-foreground/80 hover:text-accent transition-smooth">Événements</a></li>
-              <li><a href="#" className="text-primary-foreground/80 hover:text-accent transition-smooth">Premium</a></li>
-              <li><a href="#" className="text-primary-foreground/80 hover:text-accent transition-smooth">À propos</a></li>
+              <li><Link to="/groups" className="text-primary-foreground/80 hover:text-accent transition-smooth">Groupes</Link></li>
+              <li><Link to="/events" className="text-primary-foreground/80 hover:text-accent transition-smooth">Événements</Link></li>
+              <li><Link to="/premium" className="text-primary-foreground/80 hover:text-accent transition-smooth">Premium</Link></li>
+              <li><Link to="/about" className="text-primary-foreground/80 hover:text-accent transition-smooth">À propos</Link></li>
             </ul>
           </div>
 
