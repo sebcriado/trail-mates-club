@@ -314,11 +314,6 @@ const EventDetail = () => {
               Organisé par le groupe {event.hiking_groups.name}
             </p>
           </div>
-          {isOrganizer && (
-            <Button variant="outline" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -478,9 +473,11 @@ const EventDetail = () => {
                   <p className="text-sm font-medium text-green-600 mb-4">
                     Vous êtes l'organisateur de cet événement
                   </p>
-                  <Button variant="outline" className="w-full" disabled>
-                    Gérer l'événement
-                  </Button>
+                  <Link to={`/events/${event.id}/edit`}>
+                    <Button variant="outline" className="w-full">
+                      Modifier l'événement
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             )}

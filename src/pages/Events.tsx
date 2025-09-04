@@ -90,13 +90,24 @@ const Events = () => {
     event.hiking_groups.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "facile": return "bg-success text-success-foreground";
-      case "modéré": return "bg-warning text-warning-foreground";
-      case "difficile": return "bg-destructive text-destructive-foreground";
-      default: return "bg-muted text-muted-foreground";
-    }
+  const getDifficultyLabel = (level: string) => {
+    const labels = {
+      easy: "Facile",
+      moderate: "Modéré",
+      hard: "Difficile",
+      expert: "Expert"
+    };
+    return labels[level as keyof typeof labels] || level;
+  };
+
+  const getDifficultyColor = (level: string) => {
+    const colors = {
+      easy: "bg-green-100 text-green-800",
+      moderate: "bg-yellow-100 text-yellow-800",
+      hard: "bg-orange-100 text-orange-800",
+      expert: "bg-red-100 text-red-800"
+    };
+    return colors[level as keyof typeof colors] || "bg-gray-100 text-gray-800";
   };
 
   if (loading) {
@@ -145,7 +156,7 @@ const Events = () => {
         {/* Events Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredEvents.map((event) => (
-            <Card key={event.id} className="hover:shadow-medium transition-all duration-300">
+            <Card key={event.id}>
               <CardHeader>
                 <div className="flex justify-between items-start mb-2">
                   <CardTitle className="text-xl text-foreground">{event.title}</CardTitle>
@@ -179,8 +190,8 @@ const Events = () => {
                     Max {event.max_participants} participants
                   </div>
                   {event.difficulty_level && (
-                    <Badge variant="secondary" className={getDifficultyColor(event.difficulty_level)}>
-                      {event.difficulty_level}
+                    <Badge className={getDifficultyColor(event.difficulty_level)}>
+                      {getDifficultyLabel(event.difficulty_level)}
                     </Badge>
                   )}
                 </div>
