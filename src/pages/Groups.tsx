@@ -165,7 +165,7 @@ const Groups = () => {
         {/* Groups Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredGroups.map((group) => (
-            <Card key={group.id} className="hover:shadow-medium transition-all duration-300">
+            <Card key={group.id}>
               <CardHeader className="p-0">
                 <div className="h-48 bg-gradient-mountain rounded-t-lg relative overflow-hidden">
                   {group.cover_image_url ? (

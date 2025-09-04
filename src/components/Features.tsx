@@ -21,38 +21,38 @@ export const Features = () => {
 
         {/* Main Features */}
         <div className="grid md:grid-cols-2 gap-8 mb-16">
-          <Card className="bg-card/80 backdrop-blur border-border/50 shadow-medium hover:shadow-glow transition-all duration-300">
+          <Card className="bg-card/80 backdrop-blur border-border/50 shadow-medium flex flex-col h-full">
             <CardHeader className="text-center pb-4">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
                 <img src={groupIcon} alt="Groupes" className="w-10 h-10" />
               </div>
               <CardTitle className="text-xl text-foreground">Créez vos groupes</CardTitle>
             </CardHeader>
-            <CardContent className="text-center">
-              <p className="text-muted-foreground mb-6">
+            <CardContent className="text-center flex flex-col flex-1">
+              <p className="text-muted-foreground mb-6 flex-1">
                 Formez des groupes avec des randonneurs qui partagent vos passions. 
                 Définissez le niveau, la région et l'ambiance de vos sorties.
               </p>
-              <Button variant="forest" className="w-full">
+              <Button variant="forest" className="w-full mt-auto">
                 <Users className="mr-2 h-4 w-4" />
                 Créer un groupe
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="bg-card/80 backdrop-blur border-border/50 shadow-medium hover:shadow-glow transition-all duration-300">
+          <Card className="bg-card/80 backdrop-blur border-border/50 shadow-medium flex flex-col h-full">
             <CardHeader className="text-center pb-4">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/10 flex items-center justify-center">
                 <img src={eventIcon} alt="Événements" className="w-10 h-10" />
               </div>
               <CardTitle className="text-xl text-foreground">Organisez des événements</CardTitle>
             </CardHeader>
-            <CardContent className="text-center">
-              <p className="text-muted-foreground mb-6">
+            <CardContent className="text-center flex flex-col flex-1">
+              <p className="text-muted-foreground mb-6 flex-1">
                 Planifiez vos randonnées, partagez les détails et gérez les inscriptions. 
                 Tout est simplifié pour vous concentrer sur l'aventure.
               </p>
-              <Button variant="trail" className="w-full">
+              <Button variant="trail" className="w-full mt-auto">
                 <Calendar className="mr-2 h-4 w-4" />
                 Créer un événement
               </Button>

@@ -19,7 +19,7 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent/50 hover:text-accent-foreground transition-smooth",
         link: "text-primary underline-offset-4 hover:underline hover:text-primary-light",
         hero: "bg-gradient-hero text-primary-foreground hover:shadow-glow transform hover:scale-105 transition-bounce shadow-medium",
-        trail: "bg-gradient-trail text-accent-foreground hover:shadow-trail transform hover:scale-105 transition-bounce",
+        trail: "bg-gradient-trail text-accent-foreground hover:shadow-trail transform transition-bounce",
         forest: "bg-gradient-forest text-primary-foreground hover:shadow-glow shadow-soft",
       },
       size: {
