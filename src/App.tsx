@@ -10,6 +10,7 @@ import Groups from "./pages/Groups";
 import Events from "./pages/Events";
 import CreateGroup from "./pages/CreateGroup";
 import GroupDetail from "./pages/GroupDetail";
+import EditGroup from "./pages/EditGroup";
 import NotFound from "./pages/NotFound";
 import CreateEvent from "./pages/CreateEvent";
 import EventDetail from "./pages/EventDetail";
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/groups" element={<Groups />} />
             <Route path="/groups/create" element={<CreateGroup />} />
             <Route path="/groups/:id" element={<GroupDetail />} />
+            <Route path="/groups/:id/edit" element={<EditGroup />} />
             <Route path="/events" element={<Events />} />
             <Route path="/events/create" element={<CreateEvent />} />
             <Route path="/events/:id" element={<EventDetail />} />
