@@ -4,10 +4,12 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Users, MapPin, Settings } from "lucide-react";
+import { ArrowLeft, Users, MapPin, Calendar, Plus, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 interface Group {
   id: string;
@@ -32,53 +34,122 @@ interface Member {
   };
 }
 
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  start_date: string;
+  end_date: string | null;
+  location: string;
+  difficulty_level: string;
+  max_participants: number;
+  is_premium: boolean;
+  organizer_id: string;
+}
+
 const GroupDetail = () => {
   const { id } = useParams();
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMember, setIsMember] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
+    const fetchGroupDetails = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("hiking_groups")
+          .select("*")
+          .eq("id", id)
+          .single();
+
+        if (error) throw error;
+        setGroup(data);
+
+        // Check if current user is a member
+        if (user) {
+          const { data: memberData } = await supabase
+            .from("group_members")
+            .select("id")
+            .eq("group_id", id)
+            .eq("user_id", user.id)
+            .single();
+
+          setIsMember(!!memberData);
+        }
+      } catch (error) {
+        console.error("Error fetching group:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger le groupe",
+          variant: "destructive",
+        });
+      }
+    };
+
+    const fetchMembers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("group_members")
+          .select(`
+            id,
+            role,
+            joined_at,
+            user_id
+          `)
+          .eq("group_id", id);
+
+        if (error) throw error;
+
+        // Fetch profiles separately to avoid relation issues
+        const memberProfiles = await Promise.all(
+          (data || []).map(async (member) => {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("full_name, avatar_url")
+              .eq("user_id", member.user_id)
+              .single();
+
+            return {
+              ...member,
+              profiles: profile || { full_name: "Utilisateur", avatar_url: null }
+            };
+          })
+        );
+
+        setMembers(memberProfiles);
+      } catch (error) {
+        console.error("Error fetching members:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchEvents = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("hiking_events")
+          .select("*")
+          .eq("group_id", id)
+          .gte("start_date", new Date().toISOString())
+          .order("start_date", { ascending: true });
+
+        if (error) throw error;
+        setEvents(data || []);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
+
     if (id) {
       fetchGroupDetails();
       fetchMembers();
+      fetchEvents();
     }
-  }, [id, user]);
-
-  const fetchGroupDetails = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("hiking_groups")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (error) throw error;
-      setGroup(data);
-
-      // Check if current user is a member
-      if (user) {
-        const { data: memberData } = await supabase
-          .from("group_members")
-          .select("id")
-          .eq("group_id", id)
-          .eq("user_id", user.id)
-          .single();
-
-        setIsMember(!!memberData);
-      }
-    } catch (error) {
-      console.error("Error fetching group:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger le groupe",
-        variant: "destructive",
-      });
-    }
-  };
+  }, [id, user, toast]);
 
   const fetchMembers = async () => {
     try {
@@ -113,8 +184,6 @@ const GroupDetail = () => {
       setMembers(memberProfiles);
     } catch (error) {
       console.error("Error fetching members:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -293,6 +362,88 @@ const GroupDetail = () => {
 
                 {group.is_private && (
                   <Badge variant="secondary">Groupe privé</Badge>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Group Events */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Événements à venir ({events.length})</CardTitle>
+                  {isMember && (
+                    <Link to="/events/create">
+                      <Button size="sm" className="bg-gradient-forest hover:opacity-90">
+                        <Plus className="h-4 w-4 mr-1" />
+                        Créer
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {events.length > 0 ? (
+                  <div className="space-y-4">
+                    {events.map((event) => (
+                      <div key={event.id} className="border rounded-lg p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <h4 className="font-semibold text-foreground">{event.title}</h4>
+                          {event.is_premium && (
+                            <Badge className="bg-amber-100 text-amber-800">Premium</Badge>
+                          )}
+                        </div>
+                        
+                        {event.description && (
+                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                            {event.description}
+                          </p>
+                        )}
+                        
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {format(new Date(event.start_date), "d MMM yyyy 'à' HH:mm", { locale: fr })}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-4 w-4" />
+                            {event.location}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Users className="h-4 w-4" />
+                            Max {event.max_participants}
+                          </div>
+                        </div>
+
+                        {event.difficulty_level && (
+                          <div className="flex items-center gap-2 mb-3">
+                            <Badge className={getDifficultyColor(event.difficulty_level)}>
+                              {getDifficultyLabel(event.difficulty_level)}
+                            </Badge>
+                          </div>
+                        )}
+
+                        <Link to={`/events/${event.id}`}>
+                          <Button variant="outline" size="sm" className="w-full">
+                            Voir les détails
+                          </Button>
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+                    <p className="text-muted-foreground mb-4">
+                      Aucun événement prévu pour ce groupe
+                    </p>
+                    {isMember && (
+                      <Link to="/events/create">
+                        <Button className="bg-gradient-forest hover:opacity-90">
+                          Créer le premier événement
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
                 )}
               </CardContent>
             </Card>

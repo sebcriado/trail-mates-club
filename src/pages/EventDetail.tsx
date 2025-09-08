@@ -531,7 +531,7 @@ const EventDetail = () => {
               <CardContent className="pt-6">
                 <Link to={`/groups/${event.group_id}`}>
                   <Button variant="outline" className="w-full">
-                    Voir le groupe {event.hiking_groups.name}
+                    Voir le groupe
                   </Button>
                 </Link>
               </CardContent>
