@@ -36,9 +36,11 @@ export const Header = () => {
                 <Bell className="h-4 w-4" />
                 <span className="absolute -top-1 -right-1 h-3 w-3 bg-accent rounded-full text-xs"></span>
               </Button>
-              <Button variant="outline" size="icon">
-                <User className="h-4 w-4" />
-              </Button>
+              <Link to="/profile">
+                <Button variant="outline" size="icon">
+                  <User className="h-4 w-4" />
+                </Button>
+              </Link>
               <Button variant="outline" size="sm" onClick={signOut}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Déconnexion
