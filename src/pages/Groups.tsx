@@ -204,11 +204,6 @@ const Groups = () => {
                       <Users className="h-4 w-4 mr-2" />
                       {group.member_count}/{group.max_members} membres
                     </div>
-                    {group.difficulty_level && (
-                      <Badge variant="secondary" className={getDifficultyColor(group.difficulty_level)}>
-                        {group.difficulty_level}
-                      </Badge>
-                    )}
                   </div>
                 </div>
               </CardContent>

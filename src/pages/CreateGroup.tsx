@@ -18,7 +18,6 @@ const CreateGroup = () => {
     name: "",
     description: "",
     location: "",
-    difficulty_level: "",
     max_members: 20,
     is_private: false,
     cover_image_url: "",
@@ -161,33 +160,17 @@ const CreateGroup = () => {
                     placeholder="Ex: Haute-Savoie, France"
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="difficulty">Niveau de difficulté</Label>
-                  <Select onValueChange={(value) => handleInputChange("difficulty_level", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un niveau" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="easy">Facile</SelectItem>
-                      <SelectItem value="moderate">Modéré</SelectItem>
-                      <SelectItem value="hard">Difficile</SelectItem>
-                      <SelectItem value="expert">Expert</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="max_members">Nombre maximum de membres</Label>
+                  <Input
+                    id="max_members"
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={formData.max_members}
+                    onChange={(e) => handleInputChange("max_members", parseInt(e.target.value))}
+                  />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="max_members">Nombre maximum de membres</Label>
-                <Input
-                  id="max_members"
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={formData.max_members}
-                  onChange={(e) => handleInputChange("max_members", parseInt(e.target.value))}
-                />
               </div>
 
               <div className="space-y-2">

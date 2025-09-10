@@ -348,12 +348,6 @@ const GroupDetail = () => {
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                   <span>{group.location || "Localisation non spécifiée"}</span>
                 </div>
-                
-                <div className="flex items-center gap-2">
-                  <Badge className={getDifficultyColor(group.difficulty_level)}>
-                    {getDifficultyLabel(group.difficulty_level)}
-                  </Badge>
-                </div>
 
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
