@@ -12,6 +12,9 @@ import { ArrowLeft, MapPin, Image, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { groupSchema } from "@/lib/validation";
+import { logger } from "@/lib/logger";
+import { z } from "zod";
 
 interface Group {
   id: string;
@@ -80,7 +83,7 @@ const EditGroup = () => {
         setCoverImageUrl(data.cover_image_url || "");
 
       } catch (error) {
-        console.error("Error fetching group:", error);
+        logger.error("Error fetching group:", error);
         toast({
           title: "Erreur",
           description: "Impossible de charger le groupe",
@@ -99,33 +102,25 @@ const EditGroup = () => {
     e.preventDefault();
     if (!group || !user) return;
 
-    // Validation
-    if (!name.trim() || !description.trim()) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs obligatoires",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setSaving(true);
 
     try {
-      const groupData = {
+      // Validate form data with Zod
+      const validatedData = groupSchema.parse({
         name: name.trim(),
         description: description.trim(),
-        location: location.trim() || null,
-        difficulty_level: difficultyLevel || null,
+        location: location.trim(),
         max_members: maxMembers,
         is_private: isPrivate,
-        cover_image_url: coverImageUrl.trim() || null,
-        updated_at: new Date().toISOString(),
-      };
+        cover_image_url: coverImageUrl.trim(),
+      });
 
       const { error } = await supabase
         .from("hiking_groups")
-        .update(groupData)
+        .update({
+          ...validatedData,
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", group.id);
 
       if (error) throw error;
@@ -137,12 +132,22 @@ const EditGroup = () => {
 
       navigate(`/groups/${group.id}`);
     } catch (error) {
-      console.error("Error updating group:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de modifier le groupe",
-        variant: "destructive",
-      });
+      if (error instanceof z.ZodError) {
+        // Handle validation errors
+        const firstError = error.errors[0];
+        toast({
+          title: "Erreur de validation",
+          description: firstError.message,
+          variant: "destructive",
+        });
+      } else {
+        logger.error("Error updating group:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de modifier le groupe",
+          variant: "destructive",
+        });
+      }
     } finally {
       setSaving(false);
     }

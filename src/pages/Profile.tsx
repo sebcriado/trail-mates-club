@@ -14,6 +14,9 @@ import { toast } from "sonner";
 import { Camera, MapPin, Calendar, Users, Trophy, Settings } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { profileSchema } from "@/lib/validation";
+import { logger } from "@/lib/logger";
+import { z } from "zod";
 
 interface Profile {
   user_id: string;
@@ -79,7 +82,7 @@ const Profile = () => {
           hiking_experience: data.hiking_experience || "beginner"
         });
       } catch (error) {
-        console.error("Error creating profile:", error);
+        logger.error("Error creating profile:", error);
       }
     };
 
@@ -110,7 +113,7 @@ const Profile = () => {
           await createDefaultProfile();
         }
       } catch (error) {
-        console.error("Error fetching profile:", error);
+        logger.error("Error fetching profile:", error);
         toast.error("Erreur lors du chargement du profil");
       } finally {
         setLoading(false);
@@ -145,7 +148,7 @@ const Profile = () => {
           participationsCount: participationsCount || 0
         });
       } catch (error) {
-        console.error("Error fetching user stats:", error);
+        logger.error("Error fetching user stats:", error);
       }
     };
 
@@ -166,13 +169,16 @@ const Profile = () => {
     setSaving(true);
 
     try {
+      // Validate form data with Zod
+      const validatedData = profileSchema.parse(formData);
+
       const { error } = await supabase
         .from("profiles")
         .update({
-          full_name: formData.full_name,
-          bio: formData.bio,
-          location: formData.location,
-          hiking_experience: formData.hiking_experience,
+          full_name: validatedData.full_name,
+          bio: validatedData.bio,
+          location: validatedData.location,
+          hiking_experience: validatedData.hiking_experience,
           updated_at: new Date().toISOString()
         })
         .eq("user_id", user.id);
@@ -181,15 +187,21 @@ const Profile = () => {
 
       setProfile({
         ...profile,
-        ...formData,
+        ...validatedData,
         updated_at: new Date().toISOString()
       });
 
       setIsEditing(false);
       toast.success("Profil mis à jour avec succès");
     } catch (error) {
-      console.error("Error updating profile:", error);
-      toast.error("Erreur lors de la mise à jour du profil");
+      if (error instanceof z.ZodError) {
+        // Handle validation errors
+        const firstError = error.errors[0];
+        toast.error(firstError.message);
+      } else {
+        logger.error("Error updating profile:", error);
+        toast.error("Erreur lors de la mise à jour du profil");
+      }
     } finally {
       setSaving(false);
     }

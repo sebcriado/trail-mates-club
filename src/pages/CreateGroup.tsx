@@ -12,6 +12,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { groupSchema } from "@/lib/validation";
+import { logger } from "@/lib/logger";
+import { z } from "zod";
 
 const CreateGroup = () => {
   const [formData, setFormData] = useState({
@@ -36,7 +39,7 @@ const CreateGroup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user) {
       navigate("/auth");
       return;
@@ -45,10 +48,13 @@ const CreateGroup = () => {
     setLoading(true);
 
     try {
+      // Validate form data with Zod
+      const validatedData = groupSchema.parse(formData);
+
       const { data, error } = await supabase
         .from("hiking_groups")
         .insert({
-          ...formData,
+          ...validatedData,
           owner_id: user.id,
         })
         .select()
@@ -72,12 +78,22 @@ const CreateGroup = () => {
 
       navigate(`/groups/${data.id}`);
     } catch (error) {
-      console.error("Error creating group:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de créer le groupe",
-        variant: "destructive",
-      });
+      if (error instanceof z.ZodError) {
+        // Handle validation errors
+        const firstError = error.errors[0];
+        toast({
+          title: "Erreur de validation",
+          description: firstError.message,
+          variant: "destructive",
+        });
+      } else {
+        logger.error("Error creating group:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de créer le groupe",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
