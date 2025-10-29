@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { logger } from "@/lib/logger";
 
 interface Group {
   id: string;
@@ -81,7 +82,7 @@ const GroupDetail = () => {
           setIsMember(!!memberData);
         }
       } catch (error) {
-        console.error("Error fetching group:", error);
+        logger.error("Error fetching group:", error);
         toast({
           title: "Erreur",
           description: "Impossible de charger le groupe",
@@ -140,7 +141,7 @@ const GroupDetail = () => {
         if (error) throw error;
         setEvents(data || []);
       } catch (error) {
-        console.error("Error fetching events:", error);
+        logger.error("Error fetching events:", error);
       }
     };
 
@@ -183,7 +184,7 @@ const GroupDetail = () => {
 
       setMembers(memberProfiles);
     } catch (error) {
-      console.error("Error fetching members:", error);
+      logger.error("Error fetching members:", error);
     }
   };
 
@@ -208,7 +209,7 @@ const GroupDetail = () => {
         description: "Vous avez rejoint le groupe !",
       });
     } catch (error) {
-      console.error("Error joining group:", error);
+      logger.error("Error joining group:", error);
       toast({
         title: "Erreur",
         description: "Impossible de rejoindre le groupe",
@@ -219,6 +220,13 @@ const GroupDetail = () => {
 
   const leaveGroup = async () => {
     if (!user) return;
+
+    // Confirmation dialog for critical action
+    const confirmed = window.confirm(
+      "Êtes-vous sûr de vouloir quitter ce groupe ? Vous devrez demander à le rejoindre à nouveau."
+    );
+
+    if (!confirmed) return;
 
     try {
       const { error } = await supabase
@@ -236,7 +244,7 @@ const GroupDetail = () => {
         description: "Vous avez quitté le groupe",
       });
     } catch (error) {
-      console.error("Error leaving group:", error);
+      logger.error("Error leaving group:", error);
       toast({
         title: "Erreur",
         description: "Impossible de quitter le groupe",

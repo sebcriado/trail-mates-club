@@ -15,6 +15,9 @@ import { Link, useNavigate } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
+import { eventSchema } from "@/lib/validation"
+import { logger } from "@/lib/logger"
+import { z } from "zod"
 
 const CreateEvent = () => {
     const [formData, setFormData] = useState({
@@ -67,7 +70,7 @@ const CreateEvent = () => {
                 
                 setGroups(userGroups)
             } catch (error) {
-                console.error("Error loading groups:", error)
+                logger.error("Error loading groups:", error)
                 toast({
                     title: "Erreur",
                     description: "Impossible de charger vos groupes",
@@ -112,40 +115,44 @@ const CreateEvent = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        
+
         if (!user) {
             navigate("/auth")
             return
         }
 
-        // Validation
-        if (!formData.title || !formData.group_id || !formData.start_date || !formData.location) {
+        if (!formData.start_date) {
             toast({
                 title: "Erreur",
-                description: "Veuillez remplir tous les champs obligatoires",
+                description: "Veuillez sélectionner une date de début",
                 variant: "destructive",
             })
             return
         }
 
         setIsSubmitting(true)
-        
+
         try {
+            // Validate form data with Zod
+            const validatedData = eventSchema.parse({
+                title: formData.title,
+                description: formData.description,
+                location: formData.location,
+                difficulty_level: formData.difficulty_level,
+                max_participants: formData.max_participants,
+                meeting_point: formData.meeting_point,
+                is_premium: formData.is_premium,
+            })
+
             const { data, error } = await supabase
                 .from("hiking_events")
                 .insert({
-                    title: formData.title,
-                    description: formData.description,
+                    ...validatedData,
                     group_id: formData.group_id,
                     organizer_id: user.id,
                     start_date: formData.start_date.toISOString(),
                     end_date: formData.end_date?.toISOString() || null,
-                    location: formData.location,
-                    difficulty_level: formData.difficulty_level || null,
-                    max_participants: formData.max_participants,
-                    meeting_point: formData.meeting_point || null,
                     equipment_needed: formData.equipment_needed.length > 0 ? formData.equipment_needed : null,
-                    is_premium: formData.is_premium,
                 })
                 .select()
                 .single()
@@ -159,12 +166,22 @@ const CreateEvent = () => {
 
             navigate(`/events/${data.id}`)
         } catch (error) {
-            console.error("Error creating event:", error)
-            toast({
-                title: "Erreur",
-                description: "Impossible de créer l'événement",
-                variant: "destructive",
-            })
+            if (error instanceof z.ZodError) {
+                // Handle validation errors
+                const firstError = error.errors[0];
+                toast({
+                    title: "Erreur de validation",
+                    description: firstError.message,
+                    variant: "destructive",
+                })
+            } else {
+                logger.error("Error creating event:", error)
+                toast({
+                    title: "Erreur",
+                    description: "Impossible de créer l'événement",
+                    variant: "destructive",
+                })
+            }
         } finally {
             setIsSubmitting(false)
         }
