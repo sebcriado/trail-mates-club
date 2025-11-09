@@ -62,7 +62,26 @@ This project is built with:
 
 ## How can I deploy this project?
 
+### Option 1: Deploy with Lovable (Quick)
+
 Simply open [Lovable](https://lovable.dev/projects/99d40881-5dfd-4a82-ab57-a9192733009a) and click on Share -> Publish.
+
+### Option 2: Deploy with Vercel (Production-Ready)
+
+For production and staging environments with CI/CD:
+
+1. **Quick Setup**: Follow the detailed guide in [DEPLOYMENT.md](./DEPLOYMENT.md)
+2. **Requirements**:
+   - Vercel account
+   - 2 Supabase projects (production + staging)
+   - GitHub repository connected
+3. **Features**:
+   - ✅ Automatic deployments (main = production, staging = pre-production)
+   - ✅ Preview deployments for Pull Requests
+   - ✅ CI/CD with GitHub Actions (lint, type-check, build)
+   - ✅ Separate databases for each environment
+
+See the complete deployment guide: [📖 DEPLOYMENT.md](./DEPLOYMENT.md)
 
 ## Can I connect a custom domain to my Lovable project?
 
