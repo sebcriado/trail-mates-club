@@ -48,17 +48,17 @@ export const Features = () => {
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/10 flex items-center justify-center">
                 <img src={eventIcon} alt="Événements" className="w-10 h-10" />
               </div>
-              <CardTitle className="text-xl text-foreground">Organisez des événements</CardTitle>
+              <CardTitle className="text-xl text-foreground">Participez aux événements</CardTitle>
             </CardHeader>
             <CardContent className="text-center flex flex-col flex-1">
               <p className="text-muted-foreground mb-6 flex-1">
-                Planifiez vos randonnées, partagez les détails et gérez les inscriptions. 
-                Tout est simplifié pour vous concentrer sur l'aventure.
+                Découvrez les randonnées organisées par la communauté et inscrivez-vous
+                pour vivre des aventures inoubliables.
               </p>
-              <Link to="/events/create">
+              <Link to="/events">
                 <Button variant="trail" className="w-full mt-auto">
                   <Calendar className="mr-2 h-4 w-4" />
-                  Créer un événement
+                  Voir les événements
                 </Button>
               </Link>
             </CardContent>
