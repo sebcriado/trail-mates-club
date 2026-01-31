@@ -43,23 +43,25 @@ const CreateEvent = () => {
     const { toast } = useToast()
     const navigate = useNavigate()
 
-    // Charger les groupes de l'utilisateur connecté
+    // Charger les groupes dont l'utilisateur est propriétaire
     useEffect(() => {
         const loadUserGroups = async () => {
             if (!user) return
-            
+
             setLoading(true)
             try {
                 const { data, error } = await supabase
                     .from("group_members")
                     .select(`
                         group_id,
+                        role,
                         hiking_groups (
                             id,
                             name
                         )
                     `)
                     .eq("user_id", user.id)
+                    .eq("role", "owner")
 
                 if (error) throw error
 
@@ -67,7 +69,7 @@ const CreateEvent = () => {
                     id: item.hiking_groups.id,
                     name: item.hiking_groups.name
                 }))
-                
+
                 setGroups(userGroups)
             } catch (error) {
                 logger.error("Error loading groups:", error)
@@ -256,7 +258,7 @@ const CreateEvent = () => {
                                     )}
                                     {!loading && groups.length === 0 && (
                                         <SelectItem value="no-groups" disabled>
-                                            Aucun groupe disponible. Rejoignez un groupe d'abord.
+                                            Vous devez être propriétaire d'un groupe pour créer un événement.
                                         </SelectItem>
                                     )}
                                     {!loading && groups.length > 0 && groups.map((group) => (

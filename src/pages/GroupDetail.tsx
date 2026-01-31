@@ -373,7 +373,7 @@ const GroupDetail = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Événements à venir ({events.length})</CardTitle>
-                  {isMember && (
+                  {isOwner && (
                     <Link to="/events/create">
                       <Button size="sm" className="bg-gradient-forest hover:opacity-90">
                         <Plus className="h-4 w-4 mr-1" />
@@ -438,7 +438,7 @@ const GroupDetail = () => {
                     <p className="text-muted-foreground mb-4">
                       Aucun événement prévu pour ce groupe
                     </p>
-                    {isMember && (
+                    {isOwner && (
                       <Link to="/events/create">
                         <Button className="bg-gradient-forest hover:opacity-90">
                           Créer le premier événement
