@@ -18,6 +18,8 @@ import { useToast } from "@/hooks/use-toast"
 import { eventSchema } from "@/lib/validation"
 import { logger } from "@/lib/logger"
 import { z } from "zod"
+import { usePremiumLimits } from "@/hooks/usePremiumLimits"
+import { PremiumLimitAlert } from "@/components/PremiumLimitAlert"
 
 const CreateEvent = () => {
     const [formData, setFormData] = useState({
@@ -38,10 +40,11 @@ const CreateEvent = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [groups, setGroups] = useState<{id: string, name: string}[]>([])
     const [loading, setLoading] = useState(false)
-    
+
     const { user } = useAuth()
     const { toast } = useToast()
     const navigate = useNavigate()
+    const { canCreateEvent, eventsThisYearCount, maxEventsPerYear, isLoading: limitsLoading } = usePremiumLimits()
 
     // Charger les groupes dont l'utilisateur est propriétaire
     useEffect(() => {
@@ -159,7 +162,18 @@ const CreateEvent = () => {
                 .select()
                 .single()
 
-            if (error) throw error
+            if (error) {
+                // Si l'erreur est liée à la policy RLS de limite
+                if (error.message?.includes('violates row-level security policy') || error.code === '42501') {
+                    toast({
+                        title: "Limite atteinte",
+                        description: "Vous avez atteint la limite de 10 événements par an pour votre compte gratuit. Passez à Premium pour créer des événements illimités.",
+                        variant: "destructive",
+                    })
+                    return
+                }
+                throw error
+            }
 
             toast({
                 title: "Succès",
@@ -216,6 +230,18 @@ const CreateEvent = () => {
                     <p className="text-muted-foreground">Rassemblez des passionnés de randonnée</p>
                 </div>
             </div>
+
+            {/* Premium Limit Alert */}
+            {!canCreateEvent && !limitsLoading && (
+                <div className="mb-6 max-w-2xl mx-auto">
+                    <PremiumLimitAlert
+                        type="event"
+                        currentCount={eventsThisYearCount}
+                        maxCount={maxEventsPerYear}
+                    />
+                </div>
+            )}
+
             <Card className="max-w-2xl mx-auto">
                 <CardHeader>
                 </CardHeader>
@@ -433,9 +459,9 @@ const CreateEvent = () => {
                                     Annuler
                                 </Button>
                             </Link>
-                            <Button 
-                                type="submit" 
-                                disabled={isSubmitting || !formData.title || !formData.group_id || !formData.start_date || !formData.location}
+                            <Button
+                                type="submit"
+                                disabled={isSubmitting || !formData.title || !formData.group_id || !formData.start_date || !formData.location || !canCreateEvent}
                                 className="flex-1 bg-gradient-forest hover:opacity-90"
                             >
                                 {isSubmitting ? "Création..." : "Créer l'événement"}

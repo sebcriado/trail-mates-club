@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { PremiumProvider } from "@/contexts/PremiumContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Groups from "./pages/Groups";
@@ -16,6 +17,7 @@ import CreateEvent from "./pages/CreateEvent";
 import EventDetail from "./pages/EventDetail";
 import EditEvent from "./pages/EditEvent";
 import Profile from "./pages/Profile";
+import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient();
 
@@ -23,9 +25,10 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+        <PremiumProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -38,10 +41,12 @@ const App = () => (
             <Route path="/events/:id" element={<EventDetail />} />
             <Route path="/events/:id/edit" element={<EditEvent />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/pricing" element={<Pricing />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+        </PremiumProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

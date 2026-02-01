@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -15,6 +14,8 @@ import { useToast } from "@/hooks/use-toast";
 import { groupSchema } from "@/lib/validation";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
+import { usePremiumLimits } from "@/hooks/usePremiumLimits";
+import { PremiumLimitAlert } from "@/components/PremiumLimitAlert";
 
 const CreateGroup = () => {
   const [formData, setFormData] = useState({
@@ -29,6 +30,7 @@ const CreateGroup = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { canCreateGroup, ownedGroupsCount, maxGroups, isLoading: limitsLoading } = usePremiumLimits();
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -60,7 +62,18 @@ const CreateGroup = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // Si l'erreur est liée à la policy RLS de limite
+        if (error.message?.includes('violates row-level security policy') || error.code === '42501') {
+          toast({
+            title: "Limite atteinte",
+            description: "Vous avez atteint la limite de groupes pour votre compte gratuit. Passez à Premium pour créer des groupes illimités.",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw error;
+      }
 
       // Auto-join the creator to the group
       await supabase
@@ -133,6 +146,17 @@ const CreateGroup = () => {
           </div>
         </div>
 
+        {/* Premium Limit Alert */}
+        {!canCreateGroup && !limitsLoading && (
+          <div className="mb-6">
+            <PremiumLimitAlert
+              type="group"
+              currentCount={ownedGroupsCount}
+              maxCount={maxGroups}
+            />
+          </div>
+        )}
+
         {/* Form */}
         <Card>
           <CardHeader>
@@ -141,7 +165,7 @@ const CreateGroup = () => {
               Remplissez les détails pour créer votre nouveau groupe de randonnée
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
@@ -220,9 +244,9 @@ const CreateGroup = () => {
                     Annuler
                   </Button>
                 </Link>
-                <Button 
-                  type="submit" 
-                  disabled={loading || !formData.name}
+                <Button
+                  type="submit"
+                  disabled={loading || !formData.name || !canCreateGroup}
                   className="flex-1 bg-gradient-forest hover:opacity-90"
                 >
                   {loading ? "Création..." : "Créer le groupe"}
