@@ -11,12 +11,14 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Camera, MapPin, Calendar, Users, Trophy, Settings } from "lucide-react";
+import { Camera, MapPin, Calendar, Users, Trophy, Settings, Crown } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { profileSchema } from "@/lib/validation";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
+import { usePremium } from "@/contexts/PremiumContext";
+import { Link } from "react-router-dom";
 
 interface Profile {
   user_id: string;
@@ -37,6 +39,7 @@ interface UserStats {
 
 const Profile = () => {
   const { user } = useAuth();
+  const { isPremium, subscription } = usePremium();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userStats, setUserStats] = useState<UserStats>({
     groupsCount: 0,
@@ -295,7 +298,13 @@ const Profile = () => {
                 </div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
+                {isPremium && (
+                  <Badge className="bg-gradient-trail text-white border-none">
+                    <Crown className="h-3 w-3 mr-1" />
+                    Premium
+                  </Badge>
+                )}
                 {profile.hiking_experience && (
                   <Badge className={getExperienceColor(profile.hiking_experience)}>
                     {getExperienceLabel(profile.hiking_experience)}
@@ -398,6 +407,25 @@ const Profile = () => {
                     <Label className="text-sm font-medium">Biographie</Label>
                     <p className="text-muted-foreground">{profile.bio || "Aucune biographie"}</p>
                   </div>
+                  {isPremium && subscription && (
+                    <div>
+                      <Label className="text-sm font-medium">Abonnement</Label>
+                      <div className="mt-2 p-3 bg-gradient-to-r from-accent/10 to-accent/5 rounded-lg border border-accent/20">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Crown className="h-4 w-4 text-accent" />
+                          <span className="font-semibold text-accent">Premium actif</span>
+                        </div>
+                        {subscription.current_period_end && (
+                          <p className="text-xs text-muted-foreground">
+                            Renouvellement le {new Date(subscription.current_period_end).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          </p>
+                        )}
+                        <Link to="/pricing" className="text-xs text-accent hover:underline mt-1 inline-block">
+                          Gérer mon abonnement →
+                        </Link>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
