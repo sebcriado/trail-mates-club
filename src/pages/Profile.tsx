@@ -37,6 +37,30 @@ interface UserStats {
   participationsCount: number;
 }
 
+interface Group {
+  id: string;
+  name: string;
+  description: string | null;
+  location: string | null;
+  difficulty_level: string | null;
+  member_count?: number;
+  created_at: string;
+}
+
+interface Event {
+  id: string;
+  title: string;
+  description: string | null;
+  location: string;
+  start_date: string;
+  difficulty_level: string | null;
+  max_participants: number;
+  hiking_groups: {
+    name: string;
+  };
+  participant_count?: number;
+}
+
 const Profile = () => {
   const { user } = useAuth();
   const { isPremium, subscription } = usePremium();
@@ -46,6 +70,8 @@ const Profile = () => {
     eventsCount: 0,
     participationsCount: 0
   });
+  const [userGroups, setUserGroups] = useState<Group[]>([]);
+  const [userEvents, setUserEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -155,13 +181,103 @@ const Profile = () => {
       }
     };
 
+    const fetchUserGroups = async () => {
+      if (!user) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("hiking_groups")
+          .select(`
+            id,
+            name,
+            description,
+            location,
+            created_at
+          `)
+          .eq("owner_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          logger.error("Error fetching user groups:", error);
+          throw error;
+        }
+
+        // Compter les membres pour chaque groupe
+        const groupsWithCounts = await Promise.all(
+          (data || []).map(async (group) => {
+            const { count } = await supabase
+              .from("group_members")
+              .select("*", { count: "exact", head: true })
+              .eq("group_id", group.id);
+
+            return {
+              ...group,
+              member_count: count || 0,
+              difficulty_level: null
+            };
+          })
+        );
+
+        setUserGroups(groupsWithCounts);
+      } catch (error) {
+        logger.error("Error fetching user groups:", error);
+      }
+    };
+
+    const fetchUserEvents = async () => {
+      if (!user) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("hiking_events")
+          .select(`
+            id,
+            title,
+            description,
+            location,
+            start_date,
+            difficulty_level,
+            max_participants,
+            hiking_groups (
+              name
+            )
+          `)
+          .eq("organizer_id", user.id)
+          .order("start_date", { ascending: false })
+          .limit(10);
+
+        if (error) throw error;
+
+        // Compter les participants pour chaque événement
+        const eventsWithCounts = await Promise.all(
+          (data || []).map(async (event) => {
+            const { count } = await supabase
+              .from("event_participants")
+              .select("*", { count: "exact", head: true })
+              .eq("event_id", event.id);
+
+            return {
+              ...event,
+              participant_count: count || 0
+            };
+          })
+        );
+
+        setUserEvents(eventsWithCounts as Event[]);
+      } catch (error) {
+        logger.error("Error fetching user events:", error);
+      }
+    };
+
     const loadData = async () => {
       if (user) {
         await fetchProfile();
         await fetchUserStats();
+        await fetchUserGroups();
+        await fetchUserEvents();
       }
     };
-    
+
     loadData();
   }, [user]);
 
@@ -315,7 +431,7 @@ const Profile = () => {
                   onClick={() => setIsEditing(!isEditing)}
                 >
                   <Settings className="h-4 w-4 mr-2" />
-                  {isEditing ? "Annuler" : "Modifier"}
+                  {isEditing ? "Annuler" : "Modifier le profil"}
                 </Button>
               </div>
             </div>
@@ -373,8 +489,10 @@ const Profile = () => {
 
         {/* Contenu principal */}
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList>
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
             <TabsTrigger value="overview">Aperçu</TabsTrigger>
+            <TabsTrigger value="groups">Mes groupes ({userStats.groupsCount})</TabsTrigger>
+            <TabsTrigger value="events">Mes événements ({userStats.eventsCount})</TabsTrigger>
             <TabsTrigger value="edit" disabled={!isEditing}>Modifier le profil</TabsTrigger>
           </TabsList>
 
@@ -440,6 +558,132 @@ const Profile = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="groups">
+            <Card>
+              <CardHeader>
+                <CardTitle>Mes groupes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {userGroups.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground mb-4">
+                      Vous n'avez pas encore créé de groupe
+                    </p>
+                    <Link to="/create-group">
+                      <Button>
+                        <Users className="h-4 w-4 mr-2" />
+                        Créer un groupe
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {userGroups.map((group) => (
+                      <Card key={group.id} className="hover:shadow-md transition-shadow">
+                        <CardHeader>
+                          <CardTitle className="text-lg">{group.name}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          {group.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              {group.description}
+                            </p>
+                          )}
+                          {group.location && (
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <MapPin className="h-4 w-4" />
+                              {group.location}
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground pt-2">
+                            <Users className="h-4 w-4" />
+                            {group.member_count || 0} membre{(group.member_count || 0) > 1 ? 's' : ''}
+                          </div>
+                          <Link to={`/groups/${group.id}`}>
+                            <Button variant="outline" className="w-full mt-2">
+                              Voir le groupe
+                            </Button>
+                          </Link>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="events">
+            <Card>
+              <CardHeader>
+                <CardTitle>Mes événements</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {userEvents.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground mb-4">
+                      Vous n'avez pas encore organisé d'événement
+                    </p>
+                    <Link to="/create-event">
+                      <Button>
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Créer un événement
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {userEvents.map((event) => (
+                      <Card key={event.id} className="hover:shadow-md transition-shadow">
+                        <CardHeader>
+                          <CardTitle className="text-lg">{event.title}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          {event.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              {event.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Calendar className="h-4 w-4" />
+                            {format(new Date(event.start_date), "d MMMM yyyy 'à' HH:mm", { locale: fr })}
+                          </div>
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <MapPin className="h-4 w-4" />
+                            {event.location}
+                          </div>
+                          <div className="flex items-center justify-between pt-2">
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Users className="h-4 w-4" />
+                              {event.participant_count || 0}/{event.max_participants} participants
+                            </div>
+                            {event.difficulty_level && (
+                              <Badge variant="outline">
+                                {event.difficulty_level}
+                              </Badge>
+                            )}
+                          </div>
+                          {event.hiking_groups && (
+                            <div className="text-sm text-muted-foreground">
+                              Groupe: {event.hiking_groups.name}
+                            </div>
+                          )}
+                          <Link to={`/events/${event.id}`}>
+                            <Button variant="outline" className="w-full mt-2">
+                              Voir l'événement
+                            </Button>
+                          </Link>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="edit">
