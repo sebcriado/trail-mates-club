@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { WeatherWidget } from "@/components/WeatherWidget";
+import { ItineraryDisplayMap } from "@/components/itinerary/ItineraryDisplayMap";
+import { ItineraryGeoJSON } from "@/types/itinerary";
 
 interface Event {
   id: string;
@@ -27,6 +29,11 @@ interface Event {
   equipment_needed: string[] | null;
   is_premium: boolean;
   created_at: string;
+  itinerary_geojson: ItineraryGeoJSON | null;
+  itinerary_distance_meters: number | null;
+  itinerary_elevation_gain_meters: number | null;
+  itinerary_elevation_loss_meters: number | null;
+  itinerary_estimated_duration_minutes: number | null;
   hiking_groups: {
     id: string;
     name: string;
@@ -69,7 +76,7 @@ const EventDetail = () => {
           .single();
 
         if (error) throw error;
-        setEvent(data);
+        setEvent(data as any);
 
         // Check if current user is a member of the group
         if (user && data.group_id) {
@@ -399,6 +406,20 @@ const EventDetail = () => {
 
             {/* Weather Widget */}
             <WeatherWidget location={event.location} date={event.start_date} />
+
+            {/* Itinerary Map - Show to all users if exists */}
+            {event.itinerary_geojson && (
+              <ItineraryDisplayMap
+                geojson={event.itinerary_geojson as ItineraryGeoJSON}
+                metrics={{
+                  distanceMeters: event.itinerary_distance_meters || 0,
+                  elevationGainMeters: event.itinerary_elevation_gain_meters || 0,
+                  elevationLossMeters: event.itinerary_elevation_loss_meters || 0,
+                  estimatedDurationMinutes: event.itinerary_estimated_duration_minutes || 0,
+                }}
+                location={event.location}
+              />
+            )}
 
             {/* Equipment */}
             {event.equipment_needed && event.equipment_needed.length > 0 && (

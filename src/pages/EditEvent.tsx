@@ -14,6 +14,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { ItineraryDrawMap } from "@/components/itinerary/ItineraryDrawMap";
+import { ItineraryGeoJSON, ItineraryMetrics } from "@/types/itinerary";
 
 interface Event {
   id: string;
@@ -29,6 +31,11 @@ interface Event {
   meeting_point: string | null;
   equipment_needed: string[] | null;
   is_premium: boolean;
+  itinerary_geojson: ItineraryGeoJSON | null;
+  itinerary_distance_meters: number | null;
+  itinerary_elevation_gain_meters: number | null;
+  itinerary_elevation_loss_meters: number | null;
+  itinerary_estimated_duration_minutes: number | null;
   hiking_groups: {
     id: string;
     name: string;
@@ -57,6 +64,10 @@ const EditEvent = () => {
   const [equipmentNeeded, setEquipmentNeeded] = useState<string[]>([]);
   const [isPremium, setIsPremium] = useState(false);
   const [newEquipment, setNewEquipment] = useState("");
+  const [itineraryData, setItineraryData] = useState<{
+    geojson: ItineraryGeoJSON | null;
+    metrics: ItineraryMetrics | null;
+  }>({ geojson: null, metrics: null });
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -88,8 +99,8 @@ const EditEvent = () => {
           return;
         }
 
-        setEvent(data);
-        
+        setEvent(data as any);
+
         // Pre-fill form with event data
         setTitle(data.title);
         setDescription(data.description || "");
@@ -101,6 +112,17 @@ const EditEvent = () => {
         setMeetingPoint(data.meeting_point || "");
         setEquipmentNeeded(data.equipment_needed || []);
         setIsPremium(data.is_premium || false);
+
+        // Load itinerary data
+        setItineraryData({
+          geojson: (data as any).itinerary_geojson as ItineraryGeoJSON | null,
+          metrics: (data as any).itinerary_geojson ? {
+            distanceMeters: (data as any).itinerary_distance_meters || 0,
+            elevationGainMeters: (data as any).itinerary_elevation_gain_meters || 0,
+            elevationLossMeters: (data as any).itinerary_elevation_loss_meters || 0,
+            estimatedDurationMinutes: (data as any).itinerary_estimated_duration_minutes || 0,
+          } : null,
+        });
 
       } catch (error) {
         console.error("Error fetching event:", error);
@@ -167,6 +189,16 @@ const EditEvent = () => {
         equipment_needed: equipmentNeeded.length > 0 ? equipmentNeeded : null,
         is_premium: isPremium,
         updated_at: new Date().toISOString(),
+        // @ts-ignore - Types will be regenerated after migration
+        itinerary_geojson: itineraryData.geojson || null,
+        // @ts-ignore
+        itinerary_distance_meters: itineraryData.metrics?.distanceMeters || null,
+        // @ts-ignore
+        itinerary_elevation_gain_meters: itineraryData.metrics?.elevationGainMeters || null,
+        // @ts-ignore
+        itinerary_elevation_loss_meters: itineraryData.metrics?.elevationLossMeters || null,
+        // @ts-ignore
+        itinerary_estimated_duration_minutes: itineraryData.metrics?.estimatedDurationMinutes || null,
       };
 
       const { error } = await supabase
@@ -396,6 +428,15 @@ const EditEvent = () => {
                   </div>
                 )}
               </div>
+
+              {/* Itinerary (Premium only) */}
+              <ItineraryDrawMap
+                initialGeojson={itineraryData.geojson}
+                difficulty={difficultyLevel as any}
+                onItineraryChange={(geojson, metrics) => {
+                  setItineraryData({ geojson, metrics });
+                }}
+              />
 
               {/* Premium Toggle */}
               <div className="flex items-center space-x-2">

@@ -20,6 +20,8 @@ import { logger } from "@/lib/logger"
 import { z } from "zod"
 import { usePremiumLimits } from "@/hooks/usePremiumLimits"
 import { PremiumLimitAlert } from "@/components/PremiumLimitAlert"
+import { ItineraryDrawMap } from "@/components/itinerary/ItineraryDrawMap"
+import { ItineraryGeoJSON, ItineraryMetrics } from "@/types/itinerary"
 
 const CreateEvent = () => {
     const [formData, setFormData] = useState({
@@ -40,6 +42,10 @@ const CreateEvent = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [groups, setGroups] = useState<{id: string, name: string}[]>([])
     const [loading, setLoading] = useState(false)
+    const [itineraryData, setItineraryData] = useState<{
+        geojson: ItineraryGeoJSON | null;
+        metrics: ItineraryMetrics | null;
+    }>({ geojson: null, metrics: null })
 
     const { user } = useAuth()
     const { toast } = useToast()
@@ -158,6 +164,16 @@ const CreateEvent = () => {
                     start_date: formData.start_date.toISOString(),
                     end_date: formData.end_date?.toISOString() || null,
                     equipment_needed: formData.equipment_needed.length > 0 ? formData.equipment_needed : null,
+                    // @ts-ignore - Types will be regenerated after migration
+                    itinerary_geojson: itineraryData.geojson || null,
+                    // @ts-ignore
+                    itinerary_distance_meters: itineraryData.metrics?.distanceMeters || null,
+                    // @ts-ignore
+                    itinerary_elevation_gain_meters: itineraryData.metrics?.elevationGainMeters || null,
+                    // @ts-ignore
+                    itinerary_elevation_loss_meters: itineraryData.metrics?.elevationLossMeters || null,
+                    // @ts-ignore
+                    itinerary_estimated_duration_minutes: itineraryData.metrics?.estimatedDurationMinutes || null,
                 })
                 .select()
                 .single()
@@ -441,6 +457,14 @@ const CreateEvent = () => {
                                 </div>
                             )}
                         </div>
+
+                        {/* Itinéraire (Premium only) */}
+                        <ItineraryDrawMap
+                            difficulty={formData.difficulty_level as any}
+                            onItineraryChange={(geojson, metrics) => {
+                                setItineraryData({ geojson, metrics });
+                            }}
+                        />
 
                         {/* Événement premium */}
                         <div className="flex items-center space-x-2">
