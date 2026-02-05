@@ -96,6 +96,7 @@ const Pricing = () => {
     "Tout du plan Gratuit",
     "Groupes illimités",
     "Événements illimités",
+    "Météo pour chaque événement",
     "Badge Premium sur votre profil",
     "Statistiques avancées",
     "Support prioritaire",

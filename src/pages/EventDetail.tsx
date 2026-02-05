@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { WeatherWidget } from "@/components/WeatherWidget";
 
 interface Event {
   id: string;
@@ -395,6 +396,9 @@ const EventDetail = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Weather Widget */}
+            <WeatherWidget location={event.location} date={event.start_date} />
 
             {/* Equipment */}
             {event.equipment_needed && event.equipment_needed.length > 0 && (
